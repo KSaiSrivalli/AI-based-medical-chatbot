@@ -1,0 +1,87 @@
+<html>
+<head>
+<title>genai.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #7a7e85;}
+.s3 { color: #bcbec4;}
+.s4 { color: #6aab73;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+genai.py</font>
+</center></td></tr></table>
+<pre><span class="s0">import </span><span class="s1">streamlit </span><span class="s0">as </span><span class="s1">st</span>
+<span class="s0">from </span><span class="s1">transformers </span><span class="s0">import </span><span class="s1">pipeline</span>
+
+<span class="s2"># Cache models</span>
+<span class="s3">@</span><span class="s1">st</span><span class="s3">.</span><span class="s1">cache_resource</span>
+<span class="s0">def </span><span class="s1">load_qa_model</span><span class="s3">():</span>
+    <span class="s0">return </span><span class="s1">pipeline</span><span class="s3">(</span><span class="s4">&quot;text2text-generation&quot;</span><span class="s3">, </span><span class="s1">model</span><span class="s3">=</span><span class="s4">&quot;google/flan-t5-base&quot;</span><span class="s3">)</span>
+
+<span class="s3">@</span><span class="s1">st</span><span class="s3">.</span><span class="s1">cache_resource</span>
+<span class="s0">def </span><span class="s1">load_summarizer</span><span class="s3">():</span>
+    <span class="s0">return </span><span class="s1">pipeline</span><span class="s3">(</span><span class="s4">&quot;summarization&quot;</span><span class="s3">, </span><span class="s1">model</span><span class="s3">=</span><span class="s4">&quot;facebook/bart-large-cnn&quot;</span><span class="s3">)</span>
+
+<span class="s3">@</span><span class="s1">st</span><span class="s3">.</span><span class="s1">cache_resource</span>
+<span class="s0">def </span><span class="s1">load_ner_model</span><span class="s3">():</span>
+    <span class="s0">return </span><span class="s1">pipeline</span><span class="s3">(</span><span class="s4">&quot;ner&quot;</span><span class="s3">, </span><span class="s1">model</span><span class="s3">=</span><span class="s4">&quot;dslim/bert-base-NER&quot;</span><span class="s3">, </span><span class="s1">grouped_entities</span><span class="s3">=</span><span class="s0">True</span><span class="s3">)</span>
+
+<span class="s1">st</span><span class="s3">.</span><span class="s1">set_page_config</span><span class="s3">(</span><span class="s1">page_title</span><span class="s3">=</span><span class="s4">&quot;GenAI Healthcare Assistant&quot;</span><span class="s3">, </span><span class="s1">layout</span><span class="s3">=</span><span class="s4">&quot;centered&quot;</span><span class="s3">)</span>
+<span class="s1">st</span><span class="s3">.</span><span class="s1">title</span><span class="s3">(</span><span class="s4">&quot;🧬 GenAI Healthcare Assistant&quot;</span><span class="s3">)</span>
+<span class="s1">st</span><span class="s3">.</span><span class="s1">write</span><span class="s3">(</span><span class="s4">&quot;This app can answer medical questions, summarize reports, and extract medical terms.&quot;</span><span class="s3">)</span>
+
+<span class="s2"># Sidebar for task selection</span>
+<span class="s1">task </span><span class="s3">= </span><span class="s1">st</span><span class="s3">.</span><span class="s1">sidebar</span><span class="s3">.</span><span class="s1">selectbox</span><span class="s3">(</span>
+    <span class="s4">&quot;Choose a task:&quot;</span><span class="s3">,</span>
+    <span class="s3">(</span><span class="s4">&quot;Medical Q&amp;A&quot;</span><span class="s3">, </span><span class="s4">&quot;Summarize Medical Report&quot;</span><span class="s3">, </span><span class="s4">&quot;Extract Medical Entities&quot;</span><span class="s3">)</span>
+<span class="s3">)</span>
+
+<span class="s2"># Load models</span>
+<span class="s1">qa_model </span><span class="s3">= </span><span class="s1">load_qa_model</span><span class="s3">()</span>
+<span class="s1">summarizer </span><span class="s3">= </span><span class="s1">load_summarizer</span><span class="s3">()</span>
+<span class="s1">ner_model </span><span class="s3">= </span><span class="s1">load_ner_model</span><span class="s3">()</span>
+
+<span class="s0">if </span><span class="s1">task </span><span class="s3">== </span><span class="s4">&quot;Medical Q&amp;A&quot;</span><span class="s3">:</span>
+    <span class="s1">st</span><span class="s3">.</span><span class="s1">subheader</span><span class="s3">(</span><span class="s4">&quot;🤖 Ask a Medical Question&quot;</span><span class="s3">)</span>
+    <span class="s1">query </span><span class="s3">= </span><span class="s1">st</span><span class="s3">.</span><span class="s1">text_area</span><span class="s3">(</span><span class="s4">&quot;Enter your question:&quot;</span><span class="s3">)</span>
+    <span class="s0">if </span><span class="s1">st</span><span class="s3">.</span><span class="s1">button</span><span class="s3">(</span><span class="s4">&quot;Get Answer&quot;</span><span class="s3">):</span>
+        <span class="s0">if </span><span class="s1">query</span><span class="s3">:</span>
+            <span class="s0">with </span><span class="s1">st</span><span class="s3">.</span><span class="s1">spinner</span><span class="s3">(</span><span class="s4">&quot;Generating answer...&quot;</span><span class="s3">):</span>
+                <span class="s1">result </span><span class="s3">= </span><span class="s1">qa_model</span><span class="s3">(</span><span class="s4">f&quot;Answer the medical question: </span><span class="s0">{</span><span class="s1">query</span><span class="s0">}</span><span class="s4">&quot;</span><span class="s3">, </span><span class="s1">max_length</span><span class="s3">=</span><span class="s5">200</span><span class="s3">)</span>
+                <span class="s1">st</span><span class="s3">.</span><span class="s1">success</span><span class="s3">(</span><span class="s1">result</span><span class="s3">[</span><span class="s5">0</span><span class="s3">][</span><span class="s4">'generated_text'</span><span class="s3">])</span>
+        <span class="s0">else</span><span class="s3">:</span>
+            <span class="s1">st</span><span class="s3">.</span><span class="s1">warning</span><span class="s3">(</span><span class="s4">&quot;Please enter a question.&quot;</span><span class="s3">)</span>
+
+<span class="s0">elif </span><span class="s1">task </span><span class="s3">== </span><span class="s4">&quot;Summarize Medical Report&quot;</span><span class="s3">:</span>
+    <span class="s1">st</span><span class="s3">.</span><span class="s1">subheader</span><span class="s3">(</span><span class="s4">&quot;📄 Summarize a Medical Report&quot;</span><span class="s3">)</span>
+    <span class="s1">report </span><span class="s3">= </span><span class="s1">st</span><span class="s3">.</span><span class="s1">text_area</span><span class="s3">(</span><span class="s4">&quot;Paste the medical report here:&quot;</span><span class="s3">)</span>
+    <span class="s0">if </span><span class="s1">st</span><span class="s3">.</span><span class="s1">button</span><span class="s3">(</span><span class="s4">&quot;Summarize&quot;</span><span class="s3">):</span><span class="s1">frm cllg ra</span>
+        <span class="s0">if </span><span class="s1">report</span><span class="s3">:</span>
+            <span class="s0">with </span><span class="s1">st</span><span class="s3">.</span><span class="s1">spinner</span><span class="s3">(</span><span class="s4">&quot;Summarizing...&quot;</span><span class="s3">):</span>
+                <span class="s1">summary </span><span class="s3">= </span><span class="s1">summarizer</span><span class="s3">(</span><span class="s1">report</span><span class="s3">, </span><span class="s1">max_length</span><span class="s3">=</span><span class="s5">130</span><span class="s3">, </span><span class="s1">min_length</span><span class="s3">=</span><span class="s5">30</span><span class="s3">, </span><span class="s1">do_sample</span><span class="s3">=</span><span class="s0">False</span><span class="s3">)</span>
+                <span class="s1">st</span><span class="s3">.</span><span class="s1">success</span><span class="s3">(</span><span class="s1">summary</span><span class="s3">[</span><span class="s5">0</span><span class="s3">][</span><span class="s4">'summary_text'</span><span class="s3">])</span>
+        <span class="s0">else</span><span class="s3">:</span>
+            <span class="s1">st</span><span class="s3">.</span><span class="s1">warning</span><span class="s3">(</span><span class="s4">&quot;Please paste the report.&quot;</span><span class="s3">)</span>
+
+<span class="s0">elif </span><span class="s1">task </span><span class="s3">== </span><span class="s4">&quot;Extract Medical Entities&quot;</span><span class="s3">:</span>
+    <span class="s1">st</span><span class="s3">.</span><span class="s1">subheader</span><span class="s3">(</span><span class="s4">&quot;🔎 Extract Drug Names, Conditions, and Tests&quot;</span><span class="s3">)</span>
+    <span class="s1">text </span><span class="s3">= </span><span class="s1">st</span><span class="s3">.</span><span class="s1">text_area</span><span class="s3">(</span><span class="s4">&quot;Paste a medical paragraph here:&quot;</span><span class="s3">)</span>
+    <span class="s0">if </span><span class="s1">st</span><span class="s3">.</span><span class="s1">button</span><span class="s3">(</span><span class="s4">&quot;Extract Entities&quot;</span><span class="s3">):</span>
+        <span class="s0">if </span><span class="s1">text</span><span class="s3">:</span>
+            <span class="s0">with </span><span class="s1">st</span><span class="s3">.</span><span class="s1">spinner</span><span class="s3">(</span><span class="s4">&quot;Extracting...&quot;</span><span class="s3">):</span>
+                <span class="s1">entities </span><span class="s3">= </span><span class="s1">ner_model</span><span class="s3">(</span><span class="s1">text</span><span class="s3">)</span>
+                <span class="s0">for </span><span class="s1">ent </span><span class="s0">in </span><span class="s1">entities</span><span class="s3">:</span>
+                    <span class="s1">st</span><span class="s3">.</span><span class="s1">markdown</span><span class="s3">(</span><span class="s4">f&quot;- **</span><span class="s0">{</span><span class="s1">ent</span><span class="s3">[</span><span class="s4">'entity_group'</span><span class="s3">]</span><span class="s0">}</span><span class="s4">**: </span><span class="s0">{</span><span class="s1">ent</span><span class="s3">[</span><span class="s4">'word'</span><span class="s3">]</span><span class="s0">} </span><span class="s4">(score: </span><span class="s0">{</span><span class="s1">ent</span><span class="s3">[</span><span class="s4">'score'</span><span class="s3">]</span><span class="s0">:</span><span class="s4">.2f</span><span class="s0">}</span><span class="s4">)&quot;</span><span class="s3">)</span>
+        <span class="s0">else</span><span class="s3">:</span>
+            <span class="s1">st</span><span class="s3">.</span><span class="s1">warning</span><span class="s3">(</span><span class="s4">&quot;Please enter some text.&quot;</span><span class="s3">)</span>
+
+</pre>
+</body>
+</html>
